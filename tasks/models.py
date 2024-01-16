@@ -7,8 +7,8 @@ from django.dispatch import receiver
 from contacts.models import Contact
 
 class Topic(models.Model):
-    title = models.CharField(max_length=30)
-    color = models.CharField(max_length=15, default=None) 
+    title = models.CharField(max_length=30, blank=True, null=True)
+    color = models.CharField(max_length=15, blank=True, null=True) 
     date = models.DateField(default=datetime.date.today)
     author = models.ForeignKey(
         User,
@@ -18,20 +18,20 @@ class Topic(models.Model):
     )
 
 class Task(models.Model):
-    category = models.CharField(max_length=30)
-    title = models.CharField(max_length=30)
-    description = models.CharField(max_length=500)
+    category = models.CharField(max_length=30, blank=True, null=True)
+    title = models.CharField(max_length=30, blank=True, null=True)
+    description = models.CharField(max_length=500, blank=True, null=True)
     date = models.DateField(default=datetime.date.today)
     topic = models.ForeignKey(
         Topic, 
         on_delete=models.CASCADE, 
-        related_name='chat_message_set', 
+        related_name='topics',
         default=None,
         blank=True, 
         null=True
     )
-    subtasks = models.TextField()
-    prio = models.CharField(max_length=30)
+    subtasks = models.TextField(blank=True, null=True)
+    prio = models.CharField(max_length=30, blank=True, null=True)
     author = models.ForeignKey(
         User,
         on_delete=models.DO_NOTHING,
