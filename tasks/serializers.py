@@ -9,4 +9,4 @@ class TaskSerializer(serializers.ModelSerializer):
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
-        fields = ['title',]
+        fields = '__all__'

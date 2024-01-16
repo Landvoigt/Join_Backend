@@ -7,8 +7,6 @@ import traceback
 from tasks.serializers import TaskSerializer, TopicSerializer
 from .models import Task, Topic
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
-from django.contrib.auth import get_user_model
 
 class view_tasks(APIView):
     authentication_classes = [TokenAuthentication]
@@ -18,17 +16,57 @@ class view_tasks(APIView):
         tasks = Task.objects.all()
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)  
+    
+    def post(self, request, format=None):
+        serializer = TaskSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'error': 'Failed to create task.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, format=None):
+        task_id = request.data.get('id')
+        try:
+            task = Task.objects.get(id=task_id)
+        except Task.DoesNotExist:
+            return Response({'error': 'Contact not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = TaskSerializer(task, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Failed to update task.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, format=None):
+        task_id = request.data.get('id')
+        try:
+            task = Task.objects.get(id=task_id)
+        except Task.DoesNotExist:
+            return Response({'error': 'Task not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        task.delete()
+        return Response({'success': 'Task deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
 class view_topics(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        tasks = Topic.objects.all()
-        serializer = TopicSerializer(tasks, many=True)
+        topics = Topic.objects.all()
+        serializer = TopicSerializer(topics, many=True)
         return Response(serializer.data)      
     
-class login_user_view(ObtainAuthToken):
+    def post(self, request, format=None):
+        serializer = TopicSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'error': 'Failed to create topic.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+class login_user(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -48,7 +86,7 @@ class login_user_view(ObtainAuthToken):
             'email': user.email,
         })
 
-class create_user_view(APIView):
+class create_user(APIView):
     def post(self, request, format=None):
         firstname = request.data.get('firstname')
         lastname = request.data.get('lastname')
@@ -60,10 +98,9 @@ class create_user_view(APIView):
             if not User.objects.filter(email=email).exists():
                 user = User.objects.create_user(username=username, first_name=firstname, last_name=lastname, password=password, email=email)
                 return Response({'success': 'Benutzer erfolgreich erstellt.'}, status=status.HTTP_201_CREATED)
-                # return render(request, 'chat/index.html', {'user_exists': True, 'redirect': redirect})
             else:
                 print(f'Benutzer bereits vorhanden für E-Mail: {email}')
                 return Response({'error': 'Benutzer bereits vorhanden.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             traceback.print_exc()
-            return Response({'error': f'Fehler beim Erstellen des Benutzers: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': f'Fehler beim Erstellen des Benutzers: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    

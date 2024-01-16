@@ -7,8 +7,8 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ('title','author','category','topic','date',)
 
 class TopicAdmin(admin.ModelAdmin):
-    fields = ('title', 'date','author',)
-    list_display = ('title', 'date','author',)
+    fields = ('title', 'date','author','color',)
+    list_display = ('title', 'date','author','color',)
     search_fields = ('title',)
 
 admin.site.register(Task, TaskAdmin)

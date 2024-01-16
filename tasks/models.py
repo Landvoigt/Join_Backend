@@ -4,9 +4,11 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from contacts.models import Contact
 
 class Topic(models.Model):
     title = models.CharField(max_length=30)
+    color = models.CharField(max_length=15, default=None) 
     date = models.DateField(default=datetime.date.today)
     author = models.ForeignKey(
         User,
@@ -37,13 +39,12 @@ class Task(models.Model):
         blank=True,
     )
     assigned_clients = models.ManyToManyField(
-        User, 
+        Contact, 
         related_name='tasks',
         blank=True,
     )
 
 
-@receiver(pre_delete, sender=User)
+@receiver(pre_delete, sender=Contact)
 def remove_user_tasks(sender, instance, **kwargs):
-    # Remove the user from all tasks when the user is deleted
     Task.objects.filter(assigned_clients=instance).delete()
