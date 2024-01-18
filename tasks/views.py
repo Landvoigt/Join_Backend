@@ -84,6 +84,7 @@ class login_user(ObtainAuthToken):
             'token': token.key,
             'user_id': user.pk,
             'email': user.email,
+            'name': f'{user.first_name} {user.last_name}',
         })
 
 class create_user(APIView):
