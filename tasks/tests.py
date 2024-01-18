@@ -19,25 +19,25 @@ class TaskApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
 
-    # def test_create_task(self):
-    #     topic = Topic.objects.create(title='test')
-    #     assigned_client = Contact.objects.create(first_name='test')
-    #     data = {
-    #         "category": "test_category",
-    #         "title": "test_title",
-    #         "description": "test_desc",
-    #         "date": "2024-01-16",
-    #         "subtasks": [],
-    #         "prio": "test",
-    #         "topic": topic.id,
-    #         "author": self.user.id,
-    #         "assigned_clients": [assigned_client.id],
-    #     }
-    #     response = self.client.post('/tasks/', data, format='json')
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    #     self.assertEqual(Task.objects.count(), 1)
-    #     self.assertEqual(Task.objects.get().title, 'test_title')
-    #     print(response.content)
+    def test_create_task(self):
+        topic = Topic.objects.create(title='test')
+        assigned_client = Contact.objects.create(first_name='test')
+        data = {
+            "category": "test_category",
+            "title": "test_title",
+            "description": "test_desc",
+            "date": "2024-01-16",
+            "subtasks": {},
+            "prio": "test",
+            "topic": topic.id,
+            "author": self.user.id,
+            "assigned_clients": [assigned_client.id],
+        }
+        response = self.client.post('/tasks/', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Task.objects.count(), 1)
+        self.assertEqual(Task.objects.get().title, 'test_title')
+        print(response.content)
 
 
     def test_update_task(self):

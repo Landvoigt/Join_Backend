@@ -2,10 +2,7 @@ import datetime
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import JSONField
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
 from contacts.models import Contact
-from django.db.models.signals import m2m_changed
 
 class Topic(models.Model):
     title = models.CharField(max_length=30, blank=True, null=True)
@@ -44,8 +41,3 @@ class Task(models.Model):
         related_name='tasks',
         blank=True,
     )
-
-
-# @receiver(pre_delete, sender=Contact)
-# def remove_user_tasks(sender, instance, **kwargs):
-#     Task.objects.filter(assigned_clients=instance).delete()

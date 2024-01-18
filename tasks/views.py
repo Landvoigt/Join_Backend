@@ -89,8 +89,8 @@ class login_user(ObtainAuthToken):
 
 class create_user(APIView):
     def post(self, request, format=None):
-        firstname = request.data.get('firstname')
-        lastname = request.data.get('lastname')
+        firstname = request.data.get('first_name')
+        lastname = request.data.get('last_name')
         password = request.data.get('password')
         email = request.data.get('email')
         username = f"{firstname.lower()}{lastname.lower()}"
