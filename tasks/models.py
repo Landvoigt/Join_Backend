@@ -1,7 +1,7 @@
 import datetime
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField
+from django.db.models import JSONField
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from contacts.models import Contact
@@ -30,7 +30,7 @@ class Task(models.Model):
         blank=True, 
         null=True
     )
-    subtasks = models.TextField(blank=True, null=True)
+    subtasks = JSONField(blank=True, null=True)
     prio = models.CharField(max_length=30, blank=True, null=True)
     author = models.ForeignKey(
         User,
