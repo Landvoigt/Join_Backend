@@ -74,10 +74,10 @@ class login_user(ObtainAuthToken):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({'error': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Email doesnt exist.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if not user.check_password(password):
-            return Response({'error': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Invalid password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         token, created = Token.objects.get_or_create(user=user)
         return Response({
@@ -97,10 +97,10 @@ class create_user(APIView):
         try:
             if not User.objects.filter(email=email).exists():
                 user = User.objects.create_user(username=username, first_name=firstname, last_name=lastname, password=password, email=email)
-                return Response({'success': 'Benutzer erfolgreich erstellt.'}, status=status.HTTP_201_CREATED)
+                return Response({'success': 'User created successfully.'}, status=status.HTTP_201_CREATED)
             else:
                 print(f'Benutzer bereits vorhanden für E-Mail: {email}')
-                return Response({'error': 'Benutzer bereits vorhanden.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'User already exists.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             traceback.print_exc()
-            return Response({'error': f'Fehler beim Erstellen des Benutzers: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
+            return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
