@@ -134,8 +134,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     }
 
     # render email text
-    email_html_message = render_to_string(
-        """
+    email_html_message = """
             <!DOCTYPE html>
             <html lang="en">
 
@@ -152,16 +151,14 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
             </body>
 
             </html>
-        """, context)
-    email_plaintext_message = render_to_string(
         """
+    email_plaintext_message = """
         Hello {{ current_user.username }},
 
         You have requested to reset your password. Please visit the following link to reset it:
 
         {{ reset_password_url }}
         """
-        , context)
 
     msg = EmailMultiAlternatives(
         # title:
