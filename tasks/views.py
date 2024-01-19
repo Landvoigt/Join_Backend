@@ -10,6 +10,13 @@ from django.contrib.auth.views import PasswordResetView
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 
+from django.core.mail import EmailMultiAlternatives
+from django.dispatch import receiver
+from django.template.loader import render_to_string
+from django.urls import reverse
+
+from django_rest_passwordreset.signals import reset_password_token_created
+
 class view_tasks(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -106,21 +113,44 @@ class create_user(APIView):
                 return Response({'error': 'User already exists.'})
         except Exception as e:
             traceback.print_exc()
-            return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-class reset_password_api(PasswordResetView):
-     def post(self, request, *args, **kwargs):
-        email = request.POST.get('email', None)
+            return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
 
-        if email:
-            User = get_user_model()
 
-            if User.objects.filter(email=email).exists():
-                request.POST = request.POST.copy()
-                request.POST['email'] = email
+@receiver(reset_password_token_created)
+def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+    """
+    Handles password reset tokens
+    When a token is created, an e-mail needs to be sent to the user
+    :param sender: View Class that sent the signal
+    :param instance: View Instance that sent the signal
+    :param reset_password_token: Token Model Object
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    # send an e-mail to the user
+    context = {
+        'current_user': reset_password_token.user,
+        'username': reset_password_token.user.username,
+        'email': reset_password_token.user.email,
+        'reset_password_url': "{}?token={}".format(
+            instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
+            reset_password_token.key)
+    }
 
-                return super().dispatch(request, *args, **kwargs)
-            else:
-                return JsonResponse({'error': 'Email not found in our records.'}, status=400)
-        else:
-            return JsonResponse({'error': 'Email is required.'}, status=400)
+    # render email text
+    email_html_message = render_to_string('email/user_reset_password.html', context)
+    email_plaintext_message = render_to_string('email/user_reset_password.txt', context)
+
+    msg = EmailMultiAlternatives(
+        # title:
+        "Password Reset for {title}".format(title="Some website title"),
+        # message:
+        email_plaintext_message,
+        # from:
+        "noreply@somehost.local",
+        # to:
+        [reset_password_token.user.email]
+    )
+    msg.attach_alternative(email_html_message, "text/html")
+    msg.send()
