@@ -12,6 +12,11 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 
+from django.http import JsonResponse
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+
 class view_tasks(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -111,11 +116,61 @@ class create_user(APIView):
             return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
 
 
+# @receiver(reset_password_token_created)
+# def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+#     """
+#     Handles password reset tokens
+#     When a token is created, an e-mail needs to be sent to the user
+#     :param sender: View Class that sent the signal
+#     :param instance: View Instance that sent the signal
+#     :param reset_password_token: Token Model Object
+#     :param args:
+#     :param kwargs:
+#     :return:
+#     """
+#     # send an e-mail to the user
+#     context = {
+#         'current_user': reset_password_token.user,
+#         'username': reset_password_token.user.username,
+#         'email': reset_password_token.user.email,
+#         'reset_password_url': "{}?token={}".format(
+#             instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
+#             reset_password_token.key)
+#     }
+
+#     # render email text
+#     email_html_message = render_to_string('email/user_reset_password.html', context)
+#     email_plaintext_message = render_to_string('email/user_reset_password.txt', context)
+
+#     msg = EmailMultiAlternatives(
+#         # title:
+#         "Password Reset for {title}".format(title="Some website title"),
+#         # message:
+#         email_plaintext_message,
+#         # from:
+#         "noreply@somehost.local",
+#         # to:
+#         [reset_password_token.user.email]
+#     )
+#     msg.attach_alternative(email_html_message, "text/html")
+#     msg.send()
+
+
+# reset_password_token_created.connect(password_reset_token_created, sender=User)
+import string
+import secrets 
+
+def generate_new_password(length=12):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(secrets.choice(characters) for _ in range(length))
+    return password
+
+
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
     """
     Handles password reset tokens
-    When a token is created, an e-mail needs to be sent to the user
+    When a token is created, a response with a token needs to be sent to the user
     :param sender: View Class that sent the signal
     :param instance: View Instance that sent the signal
     :param reset_password_token: Token Model Object
@@ -123,58 +178,61 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     :param kwargs:
     :return:
     """
-    # send an e-mail to the user
+
     context = {
         'current_user': reset_password_token.user,
         'username': reset_password_token.user.username,
         'email': reset_password_token.user.email,
         'reset_password_url': "{}?token={}".format(
             instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
-            reset_password_token.key)
+            reset_password_token.key),
+        'new_password': new_password,
     }
+    # Check if the user is found
+    if reset_password_token.user:
+        # Generate a new password or token (modify this part as needed)
+        new_password = generate_new_password()
 
-    # render email text
-    email_html_message = """
-            <!DOCTYPE html>
-            <html lang="en">
+        # Set the new password for the user (you may want to save it to the user model)
+        reset_password_token.user.set_password(new_password)
+        reset_password_token.user.save()
 
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Document</title>
-            </head>
+        # Generate a token for the user
+        uidb64 = urlsafe_base64_encode(force_bytes(reset_password_token.user.pk))
+        token = PasswordResetTokenGenerator().make_token(reset_password_token.user)
 
-            <body>
-                <p>Hello {{ current_user.username }},</p>
-                <p>You have requested to reset your password. Please click the following link to reset it:</p>
-                <p><a href="{{ reset_password_url }}">Reset Password</a></p>
-            </body>
+        # Include the new password or token in the response
+        response_data = {
+            'status': 'OK',
+            'uidb64': uidb64,
+            'token': token,
+        }
 
-            </html>
-        """
-    email_plaintext_message = """
-        Hello {{ current_user.username }},
-
-        You have requested to reset your password. Please visit the following link to reset it:
-
-        {{ reset_password_url }}
-        """
-
-    msg = EmailMultiAlternatives(
-        # title:
-        "Password Reset for {title}".format(title="Some website title"),
-        # message:
-        email_plaintext_message,
-        # from:
-        "noreply@somehost.local",
-        # to:
-        [reset_password_token.user.email]
-    )
-    msg.attach_alternative(email_html_message, "text/html")
-    msg.send()
+        # render email text
+        email_html_message = render_to_string('email/user_reset_password.html', context)
+        email_plaintext_message = render_to_string('email/user_reset_password.txt', context)
 
 
-reset_password_token_created.connect(password_reset_token_created, sender=User)
+        msg = EmailMultiAlternatives(
+            # title:
+            "Password Reset for {title}".format(title="Some website title"),
+            # message:
+            email_plaintext_message,
+            # from:
+            "noreply@somehost.local",
+            # to:
+            [reset_password_token.user.email]
+        )
+        msg.attach_alternative(email_html_message, "text/html")
+        msg.send()
+    else:
+        response_data = {
+            'status': 'User not found',
+        }
+
+    return JsonResponse(response_data)
+
+
         
 # from django.http import JsonResponse
 
