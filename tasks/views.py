@@ -6,7 +6,7 @@ import traceback
 from tasks.serializers import TaskSerializer, TopicSerializer
 from .models import Task, Topic
 from django.contrib.auth.models import User
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -198,34 +198,45 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
             'uidb64': uidb64,
             'token': token,
         }
-        
-        context = {
-            'current_user': reset_password_token.user,
-            'username': reset_password_token.user.username,
-            'email': reset_password_token.user.email,
-            'reset_password_url': "{}?token={}".format(
-                instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
-                reset_password_token.key),
-            'new_password': new_password,
-        }
 
-        # render email text
-        email_html_message = render_to_string('email/user_reset_password.html', context)
-        email_plaintext_message = render_to_string('email/user_reset_password.txt', context)
+        # context = {
+        #     'current_user': reset_password_token.user,
+        #     'username': reset_password_token.user.username,
+        #     'email': reset_password_token.user.email,
+        #     'reset_password_url': "{}?token={}".format(
+        #         instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
+        #         reset_password_token.key),
+        #     'new_password': new_password,
+        # }
+
+        # # render email text
+        # email_html_message = render_to_string('email/user_reset_password.html', context)
+        # email_plaintext_message = render_to_string('email/user_reset_password.txt', context)
 
 
-        msg = EmailMultiAlternatives(
-            # title:
-            "Password Reset for {title}".format(title="Some website title"),
-            # message:
-            email_plaintext_message,
-            # from:
-            "noreply@somehost.local",
-            # to:
-            [reset_password_token.user.email]
-        )
-        msg.attach_alternative(email_html_message, "text/html")
-        msg.send()
+        # msg = EmailMultiAlternatives(
+        #     # title:
+        #     "Password Reset for {title}".format(title="Hallo"),
+        #     # message:
+        #     # email_plaintext_message,
+        #     # from:
+        #     "noreply@somehost.local",
+        #     # to:
+        #     [reset_password_token.user.email]
+        # )
+        # # msg.attach_alternative(email_html_message, "text/html")
+        # msg.send()
+
+        connection = get_connection() # uses SMTP server specified in settings.py
+        connection.open() # If you don't open the connection manually, Django will automatically open, then tear down the connection in msg.send()
+
+        # html_content = render_to_string('newsletter.html', {'newsletter': n,})               
+        text_content = "Yes"                     
+        msg = EmailMultiAlternatives("subject", text_content, "from@bla", [reset_password_token.user.email], connection=connection)                                      
+        # msg.attach_alternative(html_content, "text/html")                                                                                                                                                                               
+        msg.send() 
+
+        connection.close()
     else:
         response_data = {
             'status': 'User not found',
