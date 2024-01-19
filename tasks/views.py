@@ -6,15 +6,10 @@ import traceback
 from tasks.serializers import TaskSerializer, TopicSerializer
 from .models import Task, Topic
 from django.contrib.auth.models import User
-from django.contrib.auth.views import PasswordResetView
-from django.http import JsonResponse
-from django.contrib.auth import get_user_model
-
 from django.core.mail import EmailMultiAlternatives
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.urls import reverse
-
 from django_rest_passwordreset.signals import reset_password_token_created
 
 class view_tasks(APIView):
@@ -154,3 +149,6 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     )
     msg.attach_alternative(email_html_message, "text/html")
     msg.send()
+
+
+reset_password_token_created.connect(password_reset_token_created, sender=User)
