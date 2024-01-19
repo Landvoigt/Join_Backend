@@ -179,15 +179,6 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     :return:
     """
 
-    context = {
-        'current_user': reset_password_token.user,
-        'username': reset_password_token.user.username,
-        'email': reset_password_token.user.email,
-        'reset_password_url': "{}?token={}".format(
-            instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
-            reset_password_token.key),
-        'new_password': new_password,
-    }
     # Check if the user is found
     if reset_password_token.user:
         # Generate a new password or token (modify this part as needed)
@@ -206,6 +197,16 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
             'status': 'OK',
             'uidb64': uidb64,
             'token': token,
+        }
+        
+        context = {
+            'current_user': reset_password_token.user,
+            'username': reset_password_token.user.username,
+            'email': reset_password_token.user.email,
+            'reset_password_url': "{}?token={}".format(
+                instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
+                reset_password_token.key),
+            'new_password': new_password,
         }
 
         # render email text
