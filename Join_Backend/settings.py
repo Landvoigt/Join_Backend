@@ -142,10 +142,3 @@ MEDIA_ROOT = '/home/timvoigt1996/Join_Backend/media'
 MEDIA_URL = '/media/'
 STATIC_ROOT = '/home/timvoigt1996/Join_Backend/static'
 STATIC_URL = '/static/'
-
-
-# EMAIL_BACKEND = "anymail.backends.mailtrap.EmailBackend"
-# ANYMAIL = {
-#     "MAILTRAP_API_KEY": "19b93b1f96f5005a05213683a4895c1a",
-# }
-# DEFAULT_FROM_EMAIL = 'join@resetpassword.com'
