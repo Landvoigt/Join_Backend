@@ -7,8 +7,8 @@ import traceback
 from tasks.serializers import TaskSerializer, TopicSerializer
 from .models import Task, Topic
 from django.contrib.auth.models import User
-from django.conf import settings
-from django.core.mail import send_mail
+from django.contrib.auth.views import PasswordResetView
+from django.http import JsonResponse
 
 class view_tasks(APIView):
     authentication_classes = [TokenAuthentication]
@@ -108,31 +108,13 @@ class create_user(APIView):
             traceback.print_exc()
             return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-class send_email(APIView):
-    def get(self, request):
-        subject = self.request.GET.get('subject')
-        txt_ = self.request.GET.get('text')
-        html_ = self.request.GET.get('html')
-        recipient_list = self.request.GET.get('recipient_list')
-        from_email = settings.DEFAULT_FROM_EMAIL
+class reset_password_api(PasswordResetView):
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email', None)
+        if email:
+            request.POST = request.POST.copy()
+            request.POST['email'] = email
 
-        if subject is None and txt_ is None and html_ is None and recipient_list is None:
-            return Response({'msg': 'There must be a subject, a recipient list, and either HTML or Text.'}, status=200)
-        elif html_ is not None and txt_ is not None:
-            return Response({'msg': 'You can either use HTML or Text.'}, status=200)
-        elif html_ is None and txt_ is None:
-            return Response({'msg': 'Either HTML or Text is required.'}, status=200)
-        elif recipient_list is None:
-            return Response({'msg': 'Recipient List required.'}, status=200)
-        elif subject is None:
-            return Response({'msg': 'Subject required.'}, status=200)
+            return super().dispatch(request, *args, **kwargs)
         else:
-            sent_mail = send_mail(
-                subject,
-                txt_,
-                from_email,
-                recipient_list.split(','),
-                html_message=html_,
-                fail_silently=False,
-            )
-            return Response({'msg': sent_mail}, status=200)
+            return JsonResponse({'error': 'Email is required.'}, status=400)
