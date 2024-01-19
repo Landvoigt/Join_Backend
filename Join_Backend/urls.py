@@ -18,19 +18,18 @@ from django.urls import path
 from contacts.views import view_contacts
 from tasks.views import login_user, create_user, view_tasks, view_topics
 from django.urls import path, include
+from django.http import HttpResponse
 
+def home_view(request):
+    return HttpResponse("Welcome to the home page!")
 
 urlpatterns = [
+    path('', home_view, name='home'),
     path('admin/', admin.site.urls),
     path('login/', login_user.as_view()),
     path('registry/', create_user.as_view()),
     path('tasks/', view_tasks.as_view()),
     path('topics/', view_topics.as_view()),
     path('contacts/', view_contacts.as_view()),
-    # path('reset_password/', auth_views.PasswordResetView.as_view(template_name = "password_reset.html"), name ='reset_password'),
-    # path('reset_password_sent/', auth_views.PasswordResetDoneView.as_view(template_name = "password_reset_sent.html"), name ='password_reset_done'),
-    # path('reset/<uidb64>/<token>', auth_views.PasswordResetConfirmView.as_view(template_name = "password_reset_form.html"), name ='password_reset_confirm'),
-    # path('reset_password_complete/', auth_views.PasswordResetCompleteView.as_view(template_name = "password_reset_done.html"), name ='password_reset_complete'),
-    path(r'^api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
-    # path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
 ]
