@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.authtoken.views import ObtainAuthToken, Token, Response, APIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +8,7 @@ from .models import Task, Topic
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordResetView
 from django.http import JsonResponse
+from django.contrib.auth import get_user_model
 
 class view_tasks(APIView):
     authentication_classes = [TokenAuthentication]
@@ -109,12 +109,18 @@ class create_user(APIView):
             return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class reset_password_api(PasswordResetView):
-    def post(self, request, *args, **kwargs):
+     def post(self, request, *args, **kwargs):
         email = request.POST.get('email', None)
-        if email:
-            request.POST = request.POST.copy()
-            request.POST['email'] = email
 
-            return super().dispatch(request, *args, **kwargs)
+        if email:
+            User = get_user_model()
+
+            if User.objects.filter(email=email).exists():
+                request.POST = request.POST.copy()
+                request.POST['email'] = email
+
+                return super().dispatch(request, *args, **kwargs)
+            else:
+                return JsonResponse({'error': 'Email not found in our records.'}, status=400)
         else:
             return JsonResponse({'error': 'Email is required.'}, status=400)
