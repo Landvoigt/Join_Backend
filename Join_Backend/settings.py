@@ -145,3 +145,11 @@ STATIC_ROOT = '/home/timvoigt1996/Join_Backend/static'
 STATIC_URL = '/static/'
 
 DJANGO_REST_MULTITOKENAUTH_RESET_TOKEN_EXPIRY_TIME = 24  # time in hours (Default: 24)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'your_smtp_server_hostname'
+EMAIL_PORT = 587  # Adjust the port as needed
+EMAIL_USE_TLS = True  # Set to False if your server doesn't use TLS
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+DEFAULT_FROM_EMAIL = ''

@@ -17,6 +17,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail import send_mail
+from django.conf import settings
 class view_tasks(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -128,7 +129,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         'You have requested to reset your password. Please click the following link to reset it:\n'
         f'{instance.request.build_absolute_uri(reverse("password_reset:reset-password-confirm"))}?token={reset_password_token.key}'
     )
-    from_email = 'timvoigt1996@gmail.com'
+    from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [reset_password_token.user.email]
 
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
