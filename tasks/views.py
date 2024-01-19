@@ -7,6 +7,8 @@ import traceback
 from tasks.serializers import TaskSerializer, TopicSerializer
 from .models import Task, Topic
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.core.mail import send_mail
 
 class view_tasks(APIView):
     authentication_classes = [TokenAuthentication]
@@ -74,10 +76,10 @@ class login_user(ObtainAuthToken):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({'error': 'Email doesnt exist.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Email doesnt exist.'})
 
         if not user.check_password(password):
-            return Response({'error': 'Invalid password.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Invalid password.'})
 
         token, created = Token.objects.get_or_create(user=user)
         return Response({
@@ -101,7 +103,36 @@ class create_user(APIView):
                 return Response({'success': 'User created successfully.'}, status=status.HTTP_201_CREATED)
             else:
                 print(f'Benutzer bereits vorhanden für E-Mail: {email}')
-                return Response({'error': 'User already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'User already exists.'})
         except Exception as e:
             traceback.print_exc()
-            return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
+            return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class send_email(APIView):
+    def get(self, request):
+        subject = self.request.GET.get('subject')
+        txt_ = self.request.GET.get('text')
+        html_ = self.request.GET.get('html')
+        recipient_list = self.request.GET.get('recipient_list')
+        from_email = settings.DEFAULT_FROM_EMAIL
+
+        if subject is None and txt_ is None and html_ is None and recipient_list is None:
+            return Response({'msg': 'There must be a subject, a recipient list, and either HTML or Text.'}, status=200)
+        elif html_ is not None and txt_ is not None:
+            return Response({'msg': 'You can either use HTML or Text.'}, status=200)
+        elif html_ is None and txt_ is None:
+            return Response({'msg': 'Either HTML or Text is required.'}, status=200)
+        elif recipient_list is None:
+            return Response({'msg': 'Recipient List required.'}, status=200)
+        elif subject is None:
+            return Response({'msg': 'Subject required.'}, status=200)
+        else:
+            sent_mail = send_mail(
+                subject,
+                txt_,
+                from_email,
+                recipient_list.split(','),
+                html_message=html_,
+                fail_silently=False,
+            )
+            return Response({'msg': sent_mail}, status=200)
