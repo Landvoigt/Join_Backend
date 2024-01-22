@@ -118,15 +118,16 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     message = (
         f'Hello {reset_password_token.user.username},\n\n'
         'You have requested to reset your password. Please click the following link to reset it:\n'
-        f'{instance.request.build_absolute_uri(reverse("password_reset:reset-password-confirm"))}?token={reset_password_token.key}'
+        # f'{instance.request.build_absolute_uri(reverse("password_reset:reset-password-confirm"))}?token={reset_password_token.key}'
+        f'http://127.0.0.1:5500/html/resetPassword.html/?token={reset_password_token.key}'
     )
     from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [reset_password_token.user.email]
-    print(instance)
-    print(instance.request.build_absolute_uri)
-    print(reset_password_token)
-    print(reset_password_token.key)
-    # send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+    # print(instance)
+    # print(instance.request.build_absolute_uri)
+    # print(reset_password_token)
+    # print(reset_password_token.key)
+    send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     # template_name = 'user_reset_password.html'
