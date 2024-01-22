@@ -29,12 +29,14 @@ ALLOWED_HOSTS = [
     'timvoigt1996.pythonanywhere.com',
     'localhost',
     '127.0.0.1',
+    'test.timvoigt.ch',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
     'http://localhost:8000',
     'http://127.0.0.1:5500',
+    'https://test.timvoigt.ch/',
 ]
 
 # Application definition
