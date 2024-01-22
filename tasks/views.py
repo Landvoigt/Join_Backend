@@ -115,11 +115,16 @@ class create_user(APIView):
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
     subject = 'Password Reset'
+    # message = (
+    #     f'Hello {reset_password_token.user.username},\n\n'
+    #     'You have requested to reset your password. Please click the following link to reset it:\n'
+    #     # f'{instance.request.build_absolute_uri(reverse("password_reset:reset-password-confirm"))}?token={reset_password_token.key}'
+    #     f'http://127.0.0.1:5500/html/resetPassword.html/?token={reset_password_token.key}'
+    # )
     message = (
-        f'Hello {reset_password_token.user.username},\n\n'
-        'You have requested to reset your password. Please click the following link to reset it:\n'
-        # f'{instance.request.build_absolute_uri(reverse("password_reset:reset-password-confirm"))}?token={reset_password_token.key}'
-        f'http://127.0.0.1:5500/html/resetPassword.html/?token={reset_password_token.key}'
+        f'Hello {reset_password_token.user.username},<br><br>'
+        'You have requested to reset your password. Please click the following link to reset it:<br>'
+        f'<a href="http://127.0.0.1:5500/html/resetPassword.html/?token={reset_password_token.key}">Reset Password</a>'
     )
     from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [reset_password_token.user.email]
