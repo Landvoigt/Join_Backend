@@ -40,6 +40,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://joinnew.timvoigt.ch',
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
