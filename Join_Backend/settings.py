@@ -36,8 +36,11 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
     'http://localhost:8000',
     'http://127.0.0.1:5500',
+    'http://joinnew.timvoigt.ch',
     'https://joinnew.timvoigt.ch',
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 
@@ -53,6 +56,7 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'tasks',
     'contacts',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
