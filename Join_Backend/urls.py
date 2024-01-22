@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from contacts.views import view_contacts
-from tasks.views import CustomPasswordResetConfirmView, login_user, create_user, view_tasks, view_topics
+from tasks.views import login_user, create_user, view_tasks, view_topics
 from django.urls import path, include
 from django.http import HttpResponse
 
