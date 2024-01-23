@@ -131,7 +131,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 class reset_user_pw(APIView):
     def post(self, request):
         token = request.data.get('token')
-        new_password = request.data.get('new_password')
+        new_password = request.data.get('password')
 
         if not token or not new_password:
             return Response({'error': 'Token and new_password are required.'}, status=400)
