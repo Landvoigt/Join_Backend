@@ -13,6 +13,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.template.loader import render_to_string
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.hashers import make_password
 
 class view_tasks(APIView):
     authentication_classes = [TokenAuthentication]
@@ -119,8 +121,23 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     message = (
         f'Hello {reset_password_token.user.username},\n\n'
         'You have requested to reset your password. Please click the following link to reset it:\n'
-        f'https://joinnew.timvoigt.ch/html/resetPassword.html/?token={reset_password_token.key}'
+        f'https://joinnew.timvoigt.ch/html/resetPassword.html?token={reset_password_token.key}'
     )
     from_email = settings.DEFAULT_FROM_EMAIL
     recipient_list = [reset_password_token.user.email]
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+
+
+class reset_user_pw(APIView):
+    def post(self, request):
+        token = request.data.get('token')
+        new_password = request.data.get('new_password')
+
+        if not token or not new_password:
+            return Response({'error': 'Token and new_password are required.'}, status=400)
+        
+        user = get_object_or_404(User, password_reset_token=token)
+        user.password = make_password(new_password)
+        user.save()
+
+        return Response({'message': 'Password reset successfully.'})

@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from contacts.views import view_contacts
-from tasks.views import login_user, create_user, view_tasks, view_topics
+from tasks.views import login_user, create_user, view_tasks, view_topics, reset_user_pw
 from django.urls import path, include
 from django.http import HttpResponse
 
@@ -31,5 +31,5 @@ urlpatterns = [
     path('topics/', view_topics.as_view()),
     path('contacts/', view_contacts.as_view()),
     path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
-    # path('api/password_reset/confirm/<str:uidb64>/<str:token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('api/password_reset/confirm/<str:uidb64>/<str:token>/', reset_user_pw.as_view(), name='password_reset_confirm'),
 ]
