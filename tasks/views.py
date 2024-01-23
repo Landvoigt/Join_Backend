@@ -7,14 +7,10 @@ from tasks.serializers import TaskSerializer, TopicSerializer
 from .models import Task, Topic
 from django.contrib.auth.models import User
 from django.dispatch import receiver
-from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth.views import PasswordResetConfirmView
-from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.hashers import make_password
 
 class view_tasks(APIView):
     authentication_classes = [TokenAuthentication]

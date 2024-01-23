@@ -25,11 +25,11 @@ def home_view(request):
 urlpatterns = [
     path('', home_view, name='home'),
     path('admin/', admin.site.urls),
-    path('login/', login_user.as_view()),
-    path('registry/', create_user.as_view()),
-    path('tasks/', view_tasks.as_view()),
-    path('topics/', view_topics.as_view()),
-    path('contacts/', view_contacts.as_view()),
+    path('login/', login_user.as_view(), name='login'),
+    path('registry/', create_user.as_view(), name='registry'),
+    path('tasks/', view_tasks.as_view(), name='tasks'),
+    path('topics/', view_topics.as_view(), name='topics'),
+    path('contacts/', view_contacts.as_view(), name='contacts'),
     path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     path('api/password_reset/confirm/<str:uidb64>/<str:token>/', reset_user_pw.as_view(), name='password_reset_confirm'),
 ]
