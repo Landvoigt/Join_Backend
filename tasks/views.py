@@ -38,7 +38,7 @@ class view_tasks(APIView):
         try:
             task = Task.objects.get(id=task_id)
         except Task.DoesNotExist:
-            return Response({'error': 'Contact not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = TaskSerializer(task, data=request.data, partial=True)
         if serializer.is_valid():
@@ -73,7 +73,7 @@ class view_topics(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response({'error': 'Failed to create topic.'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class login_user(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
@@ -82,10 +82,10 @@ class login_user(ObtainAuthToken):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({'error': 'Email doesnt exist.'})
+            return Response({'error': 'Email does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if not user.check_password(password):
-            return Response({'error': 'Invalid password.'})
+            return Response({'error': 'Invalid password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         token, created = Token.objects.get_or_create(user=user)
         return Response({
@@ -93,7 +93,8 @@ class login_user(ObtainAuthToken):
             'user_id': user.pk,
             'email': user.email,
             'name': f'{user.first_name} {user.last_name}',
-        })
+        }, status=status.HTTP_200_OK)
+    
 
 class create_user(APIView):
     def post(self, request, format=None):
@@ -108,11 +109,10 @@ class create_user(APIView):
                 user = User.objects.create_user(username=username, first_name=firstname, last_name=lastname, password=password, email=email)
                 return Response({'success': 'User created successfully.'}, status=status.HTTP_201_CREATED)
             else:
-                print(f'Benutzer bereits vorhanden für E-Mail: {email}')
-                return Response({'error': 'User already exists.'})
+                return Response({'error': 'User already exists.'}, status=status.HTTP_409_CONFLICT)
         except Exception as e:
             traceback.print_exc()
-            return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
+            return Response({'error': f'Error creating user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
 
 
 @receiver(reset_password_token_created)
@@ -129,15 +129,15 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 
 
 class reset_user_pw(APIView):
-    def post(self, request):
+     def post(self, request):
         token = request.data.get('token')
         new_password = request.data.get('password')
 
         if not token or not new_password:
-            return Response({'error': 'Token and new_password are required.'}, status=400)
+            return Response({'error': 'Token and new_password are required.'}, status=status.HTTP_400_BAD_REQUEST)
         
         user = get_object_or_404(User, password_reset_token=token)
-        user.password = make_password(new_password)
+        user.set_password(new_password)
         user.save()
 
         return Response({'message': 'Password reset successfully.'})
