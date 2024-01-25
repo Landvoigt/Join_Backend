@@ -113,14 +113,17 @@ class create_user(APIView):
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+    if isinstance(reset_password_token, str):
+        return
+    user = reset_password_token.user
     subject = 'Password Reset'
     message = (
-        f'Hello {reset_password_token.user.username},\n\n'
+        f'Hello {user.username},\n\n'
         'You have requested to reset your password. Please click the following link to reset it:\n'
         f'https://joinnew.timvoigt.ch/html/resetPassword.html?token={reset_password_token.key}'
     )
     from_email = settings.DEFAULT_FROM_EMAIL
-    recipient_list = [reset_password_token.user.email]
+    recipient_list = [user.email]
     send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
 
