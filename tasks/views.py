@@ -70,7 +70,8 @@ class view_topics(APIView):
         else:
             return Response({'error': 'Failed to create topic.'}, status=status.HTTP_400_BAD_REQUEST)
 
-class login_user(ObtainAuthToken):
+
+class login_user(ObtainAuthToken, APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
         password = request.data.get('password')

@@ -15,6 +15,7 @@ class Topic(models.Model):
         blank=True,
     )
 
+
 class Task(models.Model):
     category = models.CharField(max_length=30, blank=True, null=True)
     title = models.CharField(max_length=30, blank=True, null=True)
